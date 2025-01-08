@@ -1,216 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <title>3D Model Viewer</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-        body {
-            margin: 0;
-            background: transparent;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            position: relative;
-            height: 100vh;
-        }
-        canvas { display: block; }
-        #mainCanvas {
-            width: 100vw;
-            height: 100vh;
-        }
-        #controlPanel {
-            position: fixed;
-            top: 10px;
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 4px;
-        }
-        #centerButton {
-            padding: 5px 10px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Modell Ansicht</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #centerButton {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #centerButton:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <canvas id="mainCanvas"></canvas>
-    <div id="controlPanel">
-        <button id="centerButton">Center Model</button>
-        <span>Click here to center the model</span>
-    </div>
-    <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.module.js';
-        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/controls/OrbitControls.js';
-        import { Line2 } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/Line2.js';
-        import { LineMaterial } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineMaterial.js';
-        import { LineGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineGeometry.js';
-        import { EdgeSplitModifier } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/modifiers/EdgeSplitModifier.js';
 
-        const data = {"camera":{"type":"Orthographic","focalDistance":143.14503479003906,"position_x":59.35516357421875,"position_y":100.14485931396484,"position_z":78.144775390625},"file":{},"objects":[{"name":"Dogbone","color":"#cccccc","opacity":1.0,"verts":"1abcadcebfedfgbhgdhibfidfjbcjdcjbkjdkiblidlgbmgdmebledlabkadkndknbkopkoqkrskrtkuvkuwkxwkxvkxwcrtcoqcnbcndcopcrscxvcuvcuwcybkybcydczpczqcAscAtcwvcwwcBwcBvcydkzqkzpkAtkAskwwkwvkBvkBwk","facets":"1abccbdcdeedfefggfhghiihjklmmlnmnoonpopqqprqrssrtlkuukvuvwwvxwxyyxzyzAAzBBzCADyECFFCzFzGGzxGxHHxvIuJJuwJwKKwyKyLLyDDALLAMABMMBNBCNNCEijHHjIHIGGIJGJFFJKFKNNKMMKLNEFOassaisikkiHkHvOPaiaggacgceskqqkmqmobaQQaPQPRRPSRSTTSUTUVVUWWUXVYTstOOtZOZ11Z2123324345546647583QtbbtlbljjlujuIQZtltnntrnrpbjddjhdhfY7TT74T4RR42R2QQ2Z67VV7Y56WW6V85XX5WPOSSO1S1UU13U3XX38","wires":[],...
+<button id="centerButton">Click hier to center the model</button>
 
-        THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+<script>
+  // Scene setup
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0); // Remove background color
+  document.body.appendChild(renderer.domElement);
 
-        const canvas = document.querySelector('#mainCanvas');
+  // OrbitControls for rotating the model
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableZoom = false; // Disable zoom
+  controls.enablePan = false;  // Disable panning
 
-        const scene = new THREE.Scene();
+  // Load 3D model (replace with your model URL or loader)
+  const loader = new THREE.GLTFLoader();
+  loader.load('path/to/your/3d-model.glb', function (gltf) {
+    scene.add(gltf.scene);
+    gltf.scene.scale.set(1, 1, 1);
+    gltf.scene.position.set(0, 0, 0);
+    camera.position.z = 5;
+    animate();
+  });
 
-        const renderer = new THREE.WebGLRenderer({
-            alpha: true,
-            antialias: true,
-            canvas: canvas
-        });
-        renderer.setClearColor(0x000000, 0);
+  // Add light
+  const light = new THREE.AmbientLight(0x404040);  // Ambient light
+  scene.add(light);
+  
+  // Add directional light for better visibility of the model
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(5, 5, 5);
+  scene.add(directionalLight);
 
-        const aspectRatio = canvas.clientWidth / canvas.clientHeight;
-        const camera = new THREE.PerspectiveCamera(50, aspectRatio, 1, 100000);
-        camera.position.set(data.camera.position_x, data.camera.position_y, data.camera.position_z);
-        scene.add(camera);
+  // Button action to center the model
+  document.getElementById('centerButton').addEventListener('click', () => {
+    controls.reset(); // Resets the camera to center the model
+  });
 
-        const light1 = new THREE.HemisphereLight(0xC7E8FF, 0xFFE3B3, 0.4);
-        scene.add(light1);
+  // Resize canvas on window resize
+  window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
 
-        const light2 = new THREE.DirectionalLight(0xffffff, 0.4);
-        light2.position.set(5, -2, 3);
-        scene.add(light2);
+  // Animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update(); // Update controls for each frame
+    renderer.render(scene, camera);
+  }
 
-        const light3 = new THREE.DirectionalLight(0xffffff, 0.4);
-        light3.position.set(-5, 2, 3);
-        scene.add(light3);
+  animate(); // Start the animation
+</script>
 
-        const base = data.base;
-        const baseFloat = data.baseFloat;
-
-        function baseDecode(input) {
-            const baseCt = base.length;
-            const output = [];
-            const len = parseInt(input[0]);
-            for (let i = 1; i < input.length; i += len) {
-                const str = input.substring(i, i + len).trim();
-                let val = 0;
-                for (let s = 0; s < str.length; s++) {
-                    const ind = base.indexOf(str[s]);
-                    val += ind * Math.pow(baseCt, s);
-                }
-                output.push(val);
-            }
-            return output;
-        }
-
-        function floatDecode(input) {
-            const baseCt = base.length;
-            const baseFloatCt = baseFloat.length;
-            let numString = '';
-            for (let i = 0; i < input.length; i += 4) {
-                const b90chunk = input.substring(i, i + 4).trim();
-                let quotient = 0;
-                for (let s = 0; s < b90chunk.length; s++) {
-                    const ind = base.indexOf(b90chunk[s]);
-                    quotient += ind * Math.pow(baseCt, s);
-                }
-                let buffer = '';
-                for (let s = 0; s < 7; s++) {
-                    buffer = baseFloat[quotient % baseFloatCt] + buffer;
-                    quotient = parseInt(quotient / baseFloatCt);
-                }
-                numString += buffer;
-            }
-            let trailingCommas = 0;
-            for (let s = 1; s < 7; s++) {
-                if (numString[numString.length - s] == baseFloat[0]) {
-                    trailingCommas++;
-                }
-            }
-            numString = numString.substring(0, numString.length - trailingCommas);
-            return numString;
-        }
-
-        if (data.compressed) {
-            for (const obj of data.objects) {
-                obj.floats = JSON.parse('[' + floatDecode(obj.floats) + ']');
-                obj.verts = baseDecode(obj.verts).map(x => obj.floats[x]);
-                obj.facets = baseDecode(obj.facets);
-                obj.wires = obj.wires.map(w => baseDecode(w).map(x => obj.floats[x]));
-                obj.facesToFacets = obj.facesToFacets.map(x => baseDecode(x));
-            }
-        }
-
-        const raycasterObj = [];
-
-        const objects = [];
-        for (const obj of data.objects) {
-            const faces = [];
-            if (obj.facesToFacets.length > 0) {
-                for (let f=0; f < obj.facesToFacets.length; f++) {
-                    const facecolor = obj.faceColors.length > 0 ? obj.faceColors[f] : obj.color;
-                    const positions = new Float32Array(obj.facesToFacets[f].length * 9);
-                    for (let a=0; a < obj.facesToFacets[f].length; a++) {
-                        for (let b=0; b < 3; b++) {
-                            for (let c=0; c < 3; c++) {
-                                positions[9 * a + 3 * b + c] = obj.verts[3 * obj.facets[3 * obj.facesToFacets[f][a] + b ] + c ];
-                            }
-                        }
-                    }
-                    const baseGeometry = new THREE.BufferGeometry();
-                    baseGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-                    const edgeSplit = new EdgeSplitModifier();
-                    const geometry = edgeSplit.modify(baseGeometry, 20 * Math.PI / 180);
-                    geometry.computeVertexNormals();
-
-                    const material = new THREE.MeshLambertMaterial({ 
-                        color: facecolor, opacity: obj.opacity, transparent: obj.opacity != 1.0 
-                    });
-
-                    const mesh = new THREE.Mesh(geometry, material);
-                    scene.add(mesh);
-                    raycasterObj.push(mesh);
-                    faces.push(mesh.uuid);
-                }
-            }
-
-            objects.push({
-                data: obj,
-                faces: faces
-            });
-        }
-
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.target.set(0, 0, 0);
-        controls.update();
-
-        // Funktion zum Zentrieren des Modells
-        function centerModel() {
-            camera.position.set(data.camera.position_x, data.camera.position_y, data.camera.position_z);
-            controls.reset();
-            controls.update();
-        }
-
-        document.getElementById('centerButton').addEventListener('click', centerModel);
-
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        window.addEventListener('resize', () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
-        });
-
-    </script>
 </body>
 </html>
