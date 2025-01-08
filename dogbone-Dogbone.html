@@ -9,16 +9,44 @@
             margin: 0;
             background: transparent;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            height: 100vh;
         }
         canvas { display: block; }
         #mainCanvas {
             width: 100vw;
             height: 100vh;
         }
+        #controlPanel {
+            position: fixed;
+            top: 10px;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 4px;
+        }
+        #centerButton {
+            padding: 5px 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
     <canvas id="mainCanvas"></canvas>
+    <div id="controlPanel">
+        <button id="centerButton">Center Model</button>
+        <span>Click here to center the model</span>
+    </div>
     <script type="module">
         import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.module.js';
         import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/controls/OrbitControls.js';
@@ -27,7 +55,7 @@
         import { LineGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineGeometry.js';
         import { EdgeSplitModifier } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/modifiers/EdgeSplitModifier.js';
 
-        const data = {"camera":{"type":"Orthographic","focalDistance":143.14503479003906,"position_x":59.35516357421875,"position_y":100.14485931396484,"position_z":78.144775390625},"file":{},"objects":[{"name":"Dogbone","color":"#cccccc","opacity":1.0,"verts":"1abcadcebfedfgbhgdhibfidfjbcjdcjbkjdkiblidlgbmgdmebledlabkadkndknbkopkoqkrskrtkuvkuwkxwkxvkxwcrtcoqcnbcndcopcrscxvcuvcuwcybkybcydczpczqcAscAtcwvcwwcBwcBvcydkzqkzpkAtkAskwwkwvkBvkBwk","facets":"1abccbdcdeedfefggfhghiihjklmmlnmnoonpopqqprqrssrtlkuukvuvwwvxwxyyxzyzAAzBBzCADyECFFCzFzGGzxGxHHxvIuJJuwJwKKwyKyLLyDDALLAMABMMBNBCNNCEijHHjIHIGGIJGJFFJKFKNNKMMKLNEFOassaisikkiHkHvOPaiaggacgceskqqkmqmobaQQaPQPRRPSRSTTSUTUVVUWWUXVYTstOOtZOZ11Z2123324345546647583QtbbtlbljjlujuIQZtltnntrnrpbjddjhdhfY7TT74T4RR42R2QQ2Z67VV7Y56WW6V85XX5WPOSSO1S1UU13U3XX38","wires...
+        const data = {"camera":{"type":"Orthographic","focalDistance":143.14503479003906,"position_x":59.35516357421875,"position_y":100.14485931396484,"position_z":78.144775390625},"file":{},"objects":[{"name":"Dogbone","color":"#cccccc","opacity":1.0,"verts":"1abcadcebfedfgbhgdhibfidfjbcjdcjbkjdkiblidlgbmgdmebledlabkadkndknbkopkoqkrskrtkuvkuwkxwkxvkxwcrtcoqcnbcndcopcrscxvcuvcuwcybkybcydczpczqcAscAtcwvcwwcBwcBvcydkzqkzpkAtkAskwwkwvkBvkBwk","facets":"1abccbdcdeedfefggfhghiihjklmmlnmnoonpopqqprqrssrtlkuukvuvwwvxwxyyxzyzAAzBBzCADyECFFCzFzGGzxGxHHxvIuJJuwJwKKwyKyLLyDDALLAMABMMBNBCNNCEijHHjIHIGGIJGJFFJKFKNNKMMKLNEFOassaisikkiHkHvOPaiaggacgceskqqkmqmobaQQaPQPRRPSRSTTSUTUVVUWWUXVYTstOOtZOZ11Z2123324345546647583QtbbtlbljjlujuIQZtltnntrnrpbjddjhdhfY7TT74T4RR42R2QQ2Z67VV7Y56WW6V85XX5WPOSSO1S1UU13U3XX38","wires":[],...
 
         THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
 
@@ -158,6 +186,15 @@
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 0, 0);
         controls.update();
+
+        // Funktion zum Zentrieren des Modells
+        function centerModel() {
+            camera.position.set(data.camera.position_x, data.camera.position_y, data.camera.position_z);
+            controls.reset();
+            controls.update();
+        }
+
+        document.getElementById('centerButton').addEventListener('click', centerModel);
 
         function animate() {
             requestAnimationFrame(animate);
