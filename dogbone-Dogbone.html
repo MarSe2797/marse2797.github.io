@@ -1,136 +1,399 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Modell Ansicht</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-    #centerButton {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #centerButton:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <title>dogbone</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="generator" content="FreeCAD 0.21.2">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #ffffff;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        canvas {
+            display: block;
+        }
+        #mainCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        #arrowCanvas {
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            width: 150px;
+            height: 150px;
+            z-index: 100;
+        }
+        #centerButton {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <button id="centerButton">Click here to center the model</button>
+    <canvas id="mainCanvas"></canvas>
+    <canvas id="arrowCanvas"></canvas>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.module.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/controls/OrbitControls.js';
 
-<button id="centerButton">Click hier to center the model</button>
+        const data = {"camera":{"type":"Orthographic","focalDistance":143.14503479003906,"position_x":59.35516357421875,"position_y":100.14485931396484,"position_z":78.144775390625},"file":{},"objects":[{"name":"Dogbone","color":"#cccccc","opacity":1.0,"verts":"1abcadcebfedfgbhgdhibfidfjbcjdcjbkjdkiblidlgbmgdmebledlabkadkndknbkopkoqkrskrtkuvkuwkxwkxvkxwcrtcoqcnbcndcopcrscxvcuvcuwcybkybcydczpczqcAscAtcwvcwwcBwcBvcydkzqkzpkAtkAskwwkwvkBvkBwk","facets":"1abccbdcdeedfefggfhghiihjklmmlnmnoonpopqqprqrssrtlkuukvuvwwvxwxyyxzyzAAzBBzCADyECFFCzFzGGzxGxHHxvIuJJuwJwKKwyKyLLyDDALLAMABMMBNBCNNCEijHHjIHIGGIJGJFFJKFKNNKMMKLNEFOassaisikkiHkHvOPaiaggacgceskqqkmqmobaQQaPQPRRPSRSTTSUTUVVUWWUXVYTstOOtZOZ11Z2123324345546647583QtbbtlbljjlujuIQZtltnntrnrpbjddjhdhfY7TT74T4RR42R2QQ2Z67VV7Y56WW6V85XX5WPOSSO1S1UU13U3XX38","wires":[],"faceColors":[],"facesToFacets":[],"floats":"&JpE#LLvP?Tvir53RaTuy]Cca$r_H6p@X_.W3d~t!]TvC4JikTDE)/Jv84Uv.Z[iW%;o?.eue5UvKG1O.{pdVrQyu`^G;Zzi0k=PSfFH0d27d0UvWU32k,ZbZVgu{4UvRaTulgvg$peCL)).~@yi"}],"compressed":true,"base":"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&()*+-:;/=>?@[]^_,.{|}~`","baseFloat":",.-0123456789"};
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+        THREE.Object3D.DefaultUp = new THREE.Vector3(0, 0, 1);
 
-<script>
-  // Scene setup
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0xFFFFFF, 1); // Set background color to white
-  document.body.appendChild(renderer.domElement);
+        const defaultWireColor = new THREE.Color('rgb(0,0,0)');
+        const defaultWireLineWidth = 2;
 
-  // OrbitControls for rotating the model
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableZoom = false; // Disable zoom
-  controls.enablePan = false;  // Disable panning
+        const raycasterObj = [];
 
-  // Your original 3D model data
-  const data = { 
-    "objects": [
-      {
-        "facesToFacets": [[0, 1, 2], [3, 4, 5]],
-        "faceColors": ["#ff0000", "#00ff00"],
-        "verts": [0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-        "facets": [0, 1, 2, 3, 4, 5],
-        "color": "#0000ff",
-        "opacity": 1,
-        "wires": [[0, 1, 2], [2, 3, 4]],
-        "name": "Model 1"
-      }
-    ]
-  };
+        const canvas = document.querySelector('#mainCanvas');
 
-  const objects = [];
-  for (const obj of data.objects) {
-    const faces = [];
-    if (obj.facesToFacets.length > 0) {
-      for (let f = 0; f < obj.facesToFacets.length; f++) {
-        const facecolor = obj.faceColors.length > 0 ? obj.faceColors[f] : obj.color;
-        const positions = new Float32Array(obj.facesToFacets[f].length * 9);
-        for (let a = 0; a < obj.facesToFacets[f].length; a++) {
-          for (let b = 0; b < 3; b++) {
-            for (let c = 0; c < 3; c++) {
-              positions[9 * a + 3 * b + c] = obj.verts[3 * obj.facets[3 * obj.facesToFacets[f][a] + b] + c];
+        const scene = new THREE.Scene();
+
+        const renderer = new THREE.WebGLRenderer({
+            alpha: true,
+            antialias: true,
+            canvas: canvas
+        });
+        renderer.setClearColor(0x000000, 0);
+
+        let renderRequested = false;
+
+        scene.add(new THREE.HemisphereLight(0xC7E8FF, 0xFFE3B3, 0.4));
+        const dLight1 = new THREE.DirectionalLight(0xffffff, 0.4);
+        dLight1.position.set(5, -2, 3);
+        scene.add(dLight1);
+        const dLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+        dLight2.position.set(-5, 2, 3);
+        scene.add(dLight2);
+
+        if (data.compressed) {
+            const base = data.base;
+            const baseFloat = data.baseFloat;
+
+            function baseDecode(input) {
+                const baseCt = base.length;
+                const output = [];
+                const len = parseInt(input[0]); // num chars of each element
+                for (let i = 1; i < input.length; i += len) {
+                    const str = input.substring(i, i + len).trim();
+                    let val = 0;
+                    for (let s = 0; s < str.length; s++) {
+                        const ind = base.indexOf(str[s]);
+                        val += ind * Math.pow(baseCt, s);
+                    }
+                    output.push(val);
+                }
+                return output;
             }
-          }
+
+            function floatDecode(input) {
+                const baseCt = base.length;
+                const baseFloatCt = baseFloat.length;
+                let numString = '';
+                for (let i = 0; i < input.length; i += 4) {
+                    const b90chunk = input.substring(i, i + 4).trim();
+                    let quotient = 0;
+                    for (let s = 0; s < b90chunk.length; s++) {
+                        const ind = base.indexOf(b90chunk[s]);
+                        quotient += ind * Math.pow(baseCt, s);
+                    }
+                    let buffer = '';
+                    for (let s = 0; s < 7; s++) {
+                        buffer = baseFloat[quotient % baseFloatCt] + buffer;
+                        quotient = parseInt(quotient / baseFloatCt);
+                    }
+                    numString += buffer;
+                }
+                let trailingCommas = 0;
+                for (let s = 1; s < 7; s++) {
+                    if (numString[numString.length - s] == baseFloat[0]) {
+                        trailingCommas++;
+                    }
+                }
+                numString = numString.substring(0, numString.length - trailingCommas);
+                return numString;
+            }
+
+            for (const obj of data.objects) {
+                obj.floats = JSON.parse('[' + floatDecode(obj.floats) + ']');
+                obj.verts = baseDecode(obj.verts).map(x => obj.floats[x]);
+                obj.facets = baseDecode(obj.facets);
+                obj.wires = obj.wires.map(w => baseDecode(w).map(x => obj.floats[x]));
+                obj.facesToFacets = obj.facesToFacets.map(x => baseDecode(x));
+            }
         }
-        assignMesh(positions, facecolor, obj.opacity, faces);
-      }
-    } else {
-      const positions = new Float32Array(obj.facets.length * 3);
-      for (let a = 0; a < obj.facets.length; a++) {
-        for (let b = 0; b < 3; b++) {
-          positions[3 * a + b] = obj.verts[3 * obj.facets[a] + b];
+
+        const globalMaxMin = [{min: null, max: null}, {min: null, max: null}, {min: null, max: null}];
+
+        for (const obj of data.objects) {
+            for (let v = 0; v < obj.verts.length; v++) {
+                if (globalMaxMin[v % 3] === null || obj.verts[v] < globalMaxMin[v % 3].min) {
+                    globalMaxMin[v % 3].min = obj.verts[v];
+                }
+                if (globalMaxMin[v % 3] === null || obj.verts[v] > globalMaxMin[v % 3].max) {
+                    globalMaxMin[v % 3].max = obj.verts[v];
+                }
+            }
         }
-      }
-      assignMesh(positions, obj.color, obj.opacity, faces);
-    }
-    objects.push({ data: obj, faces: faces });
-  }
+        let bigrange = 0;
+        for (const i of globalMaxMin) {
+            const range = i.max - i.min;
+            if (range > bigrange) {
+                bigrange = range;
+            }
+            i.min -= range * 0.01;
+            i.max += range * 0.01;
+        }
 
-  function assignMesh(positions, color, opacity, faces) {
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    const material = new THREE.MeshBasicMaterial({ color: color, opacity: opacity, transparent: true });
-    const mesh = new THREE.Mesh(geometry, material);
-    faces.push(mesh);
-    scene.add(mesh);
-  }
+        const camCenter = new THREE.Vector3(
+            0.5 * (globalMaxMin[0].max - globalMaxMin[0].min) + globalMaxMin[0].min,
+            0.5 * (globalMaxMin[1].max - globalMaxMin[1].min) + globalMaxMin[1].min,
+            0.5 * (globalMaxMin[2].max - globalMaxMin[2].min) + globalMaxMin[2].min
+        );
+        const viewSize = 1.5 * bigrange;
+        const aspectRatio = canvas.clientWidth / canvas.clientHeight;
+        const originalAspect = aspectRatio;
 
-  // Add light
-  const light = new THREE.AmbientLight(0x404040);  // Ambient light
-  scene.add(light);
+        function initCam(camera) {
+            camera.position.set(
+                data.camera.position_x,
+                data.camera.position_y,
+                data.camera.position_z
+            );
+            camera.lookAt(camCenter);
+            camera.updateMatrixWorld();
+        }
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(5, 5, 5);
-  scene.add(directionalLight);
+        const persCamera = new THREE.PerspectiveCamera(
+            50, aspectRatio, 1, 100000
+        );
+        initCam(persCamera);
 
-  // Center the model button
-  document.getElementById('centerButton').addEventListener('click', () => {
-    controls.reset(); // Resets the camera to center the model
-  });
+        function assignMesh(positions, color, opacity, faces) {
+            const baseGeometry = new THREE.BufferGeometry();
+            baseGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-  // Resize canvas on window resize
-  window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-  });
+            const edgeSplit = new EdgeSplitModifier();
+            const cutOffAngle = 20;
+            const geometry = edgeSplit.modify(baseGeometry, cutOffAngle * Math.PI / 180);
+            geometry.computeVertexNormals();
+            geometry.computeBoundingSphere();
 
-  // Camera position
-  camera.position.z = 5;
+            const material = new THREE.MeshLambertMaterial({
+                color: color,
+                side: THREE.DoubleSide,
+                vertexColors: false,
+                flatShading: false,
+                opacity: opacity,
+                transparent: opacity != 1.0,
+                fog: false
+            });
 
-  // Animation loop
-  function animate() {
-    requestAnimationFrame(animate);
-    controls.update(); // Update controls for each frame
-    renderer.render(scene, camera);
-  }
+            const meshobj = new THREE.Mesh(geometry, material);
+            meshobj.name = meshobj.uuid;
+            faces.push(meshobj.uuid);
+            scene.add(meshobj);
+            raycasterObj.push(meshobj);
+        }
 
-  animate(); // Start the animation
-</script>
+        const objects = [];
+        for (const obj of data.objects) {
+            const faces = [];
+            if (obj.facesToFacets.length > 0) {
+                for (let f=0; f < obj.facesToFacets.length; f++) {
+                    const facecolor = obj.faceColors.length > 0 ? obj.faceColors[f] : obj.color;
+                    const positions = new Float32Array(obj.facesToFacets[f].length * 9);
+                    for (let a=0; a < obj.facesToFacets[f].length; a++) {
+                        for (let b=0; b < 3; b++) {
+                            for (let c=0; c < 3; c++) {
+                                positions[9 * a + 3 * b + c] = obj.verts[3 * obj.facets[3 * obj.facesToFacets[f][a] + b ] + c ];
+                            }
+                        }
+                    }
+                    assignMesh(positions, facecolor, obj.opacity, faces);
+                }
+            } else {
+                const positions = new Float32Array(obj.facets.length * 3);
+                for (let a=0; a < obj.facets.length; a++) {
+                    for (let b=0; b < 3; b++) {
+                        positions[3 * a + b] = obj.verts[3 * obj.facets[a] + b];
+                    }
+                }
+                assignMesh(positions, obj.color, obj.opacity, faces);
+            }
 
+            const wirematerial = new LineMaterial({
+                color: defaultWireColor,
+                linewidth: defaultWireLineWidth,
+                dashed: false, dashSize: 1, gapSize: 1, dashScale: 3
+            });
+            wirematerial.resolution.set(
+                canvas.clientWidth * window.devicePixelRatio,
+                canvas.clientHeight * window.devicePixelRatio
+            );
+
+            const wires = [];
+            for (const w of obj.wires) {
+                const wiregeometry = new LineGeometry();
+                wiregeometry.setPositions(w);
+                const wire = new Line2(wiregeometry, wirematerial);
+                wire.computeLineDistances();
+                wire.scale.set(1, 1, 1);
+                wire.name = wire.uuid;
+                scene.add(wire);
+                wires.push(wire.name);
+            }
+            objects.push({
+                data: obj,
+                faces: faces,
+                wires: wires,
+                wirematerial: wirematerial
+            });
+        }
+
+        const arrowCanvas = document.querySelector('#arrowCanvas');
+        const arrowRenderer = new THREE.WebGLRenderer({
+            alpha: true,
+            canvas: arrowCanvas
+        });
+        arrowRenderer.setClearColor(0x000000, 0);
+        arrowRenderer.setSize(arrowCanvas.clientWidth * window.devicePixelRatio,
+                              arrowCanvas.clientHeight * window.devicePixelRatio);
+
+        const arrowScene = new THREE.Scene();
+
+        const arrowCamera = new THREE.PerspectiveCamera(
+            50, arrowCanvas.clientWidth / arrowCanvas.clientHeight, 1, 500
+        );
+        arrowCamera.up = persCamera.up;
+
+        const arrowPos = new THREE.Vector3(0, 0, 0);
+        arrowScene.add(new THREE.ArrowHelper(
+            new THREE.Vector3(1, 0, 0), arrowPos, 60, 0x7F2020, 20, 10));
+        arrowScene.add(new THREE.ArrowHelper(
+            new THREE.Vector3(0, 1, 0), arrowPos, 60, 0x207F20, 20, 10));
+        arrowScene.add(new THREE.ArrowHelper(
+            new THREE.Vector3(0, 0, 1), arrowPos, 60, 0x20207F, 20, 10));
+        arrowScene.add(new THREE.Mesh(
+            new THREE.BoxGeometry(40, 40, 40),
+            new THREE.MeshLambertMaterial({ color: 0xaaaaaa, flatShading: false })
+        ));
+        arrowScene.add(new THREE.HemisphereLight(0xC7E8FF, 0xFFE3B3, 1.2));
+
+        const persControls = new OrbitControls(persCamera, renderer.domElement);
+        persControls.target = camCenter;
+        persControls.update();
+
+        function render() {
+            renderRequested = false;
+            persControls.update();
+            arrowCamera.position.copy(persCamera.position);
+            arrowCamera.position.sub(persControls.target);
+            arrowCamera.lookAt(arrowScene.position);
+            arrowCamera.position.setLength(200);
+
+            renderer.render(scene, persCamera);
+            arrowRenderer.render(arrowScene, arrowCamera);
+        };
+
+        function requestRender() {
+            if (!renderRequested) {
+                renderRequested = true;
+                requestAnimationFrame(render);
+            }
+        }
+
+        persControls.addEventListener('change', requestRender);
+        renderer.domElement.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('resize', onMainCanvasResize, false);
+
+        onMainCanvasResize();
+        requestRender();
+
+        function onMainCanvasResize() {
+            const pixelRatio = window.devicePixelRatio;
+            const width = canvas.clientWidth * pixelRatio | 0;
+            const height = canvas.clientHeight * pixelRatio | 0;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            const aspect = canvas.clientWidth / canvas.clientHeight;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+
+                const change = originalAspect / aspect;
+                const newSize = viewSize * change;
+                persCamera.aspect = canvas.clientWidth / canvas.clientHeight;
+                persCamera.updateProjectionMatrix();
+            }
+
+            for (const obj of objects) {
+                obj.wirematerial.resolution.set(width, height);
+            }
+            requestRender();
+        }
+
+        function onMouseMove(e)  {
+            let c = persCamera;
+            if (!c) {
+                return;
+            }
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(
+                (e.clientX / canvas.clientWidth) * 2 - 1,
+                -(e.clientY / canvas.clientHeight) * 2 + 1),
+                                    c);
+            const intersects = raycaster.intersectObjects(raycasterObj);
+
+            let chosen = '';
+            for (const i of intersects) {
+                const m = i.object.material;
+                if (m.opacity > 0) {
+                    if (m.emissive.getHex() == 0x000000) {
+                        m.emissive.setHex(0x777777);
+                        m.needsUpdate = true;
+                        requestRender();
+                    }
+                    chosen = i.object.name;
+                    break;
+                }
+            }
+            for (const r of raycasterObj) {
+                if (r.name == chosen) {
+                    continue;
+                }
+                if (r.material.emissive.getHex() != 0x000000) {
+                    r.material.emissive.setHex(0x000000);
+                    r.material.needsUpdate = true;
+                    requestRender();
+                }
+            }
+        }
+
+        // Button to center the model
+        document.getElementById('centerButton').addEventListener('click', function() {
+            persControls.reset();
+            persControls.target.copy(camCenter);
+            initCam(persCamera);
+            requestRender();
+        });
+    </script>
 </body>
 </html>
