@@ -31,13 +31,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+
 <script>
   // Scene setup
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x000000, 0); // Remove background color
+  renderer.setClearColor(0xFFFFFF, 1); // Set background color to white
   document.body.appendChild(renderer.domElement);
 
   // OrbitControls for rotating the model
@@ -45,26 +46,68 @@
   controls.enableZoom = false; // Disable zoom
   controls.enablePan = false;  // Disable panning
 
-  // Load 3D model (replace with your model URL or loader)
-  const loader = new THREE.GLTFLoader();
-  loader.load('path/to/your/3d-model.glb', function (gltf) {
-    scene.add(gltf.scene);
-    gltf.scene.scale.set(1, 1, 1);
-    gltf.scene.position.set(0, 0, 0);
-    camera.position.z = 5;
-    animate();
-  });
+  // Your original 3D model data
+  const data = { 
+    "objects": [
+      {
+        "facesToFacets": [[0, 1, 2], [3, 4, 5]],
+        "faceColors": ["#ff0000", "#00ff00"],
+        "verts": [0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+        "facets": [0, 1, 2, 3, 4, 5],
+        "color": "#0000ff",
+        "opacity": 1,
+        "wires": [[0, 1, 2], [2, 3, 4]],
+        "name": "Model 1"
+      }
+    ]
+  };
+
+  const objects = [];
+  for (const obj of data.objects) {
+    const faces = [];
+    if (obj.facesToFacets.length > 0) {
+      for (let f = 0; f < obj.facesToFacets.length; f++) {
+        const facecolor = obj.faceColors.length > 0 ? obj.faceColors[f] : obj.color;
+        const positions = new Float32Array(obj.facesToFacets[f].length * 9);
+        for (let a = 0; a < obj.facesToFacets[f].length; a++) {
+          for (let b = 0; b < 3; b++) {
+            for (let c = 0; c < 3; c++) {
+              positions[9 * a + 3 * b + c] = obj.verts[3 * obj.facets[3 * obj.facesToFacets[f][a] + b] + c];
+            }
+          }
+        }
+        assignMesh(positions, facecolor, obj.opacity, faces);
+      }
+    } else {
+      const positions = new Float32Array(obj.facets.length * 3);
+      for (let a = 0; a < obj.facets.length; a++) {
+        for (let b = 0; b < 3; b++) {
+          positions[3 * a + b] = obj.verts[3 * obj.facets[a] + b];
+        }
+      }
+      assignMesh(positions, obj.color, obj.opacity, faces);
+    }
+    objects.push({ data: obj, faces: faces });
+  }
+
+  function assignMesh(positions, color, opacity, faces) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    const material = new THREE.MeshBasicMaterial({ color: color, opacity: opacity, transparent: true });
+    const mesh = new THREE.Mesh(geometry, material);
+    faces.push(mesh);
+    scene.add(mesh);
+  }
 
   // Add light
   const light = new THREE.AmbientLight(0x404040);  // Ambient light
   scene.add(light);
-  
-  // Add directional light for better visibility of the model
+
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.position.set(5, 5, 5);
   scene.add(directionalLight);
 
-  // Button action to center the model
+  // Center the model button
   document.getElementById('centerButton').addEventListener('click', () => {
     controls.reset(); // Resets the camera to center the model
   });
@@ -75,6 +118,9 @@
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
   });
+
+  // Camera position
+  camera.position.z = 5;
 
   // Animation loop
   function animate() {
