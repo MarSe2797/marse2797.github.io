@@ -1,29 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <title>dogbone</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
         <meta name="generator" content="FreeCAD 0.21.2">
         <style>
-            body { margin: 0; overflow: hidden; }
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                background: #ffffff; /* Old browsers */
+                background: -moz-linear-gradient(top, #e3e9fc 0%, #ffffff 70%, #e2dab3 100%); /* FF3.6-15 */
+                background: -webkit-linear-gradient(top, #e3e9fc 0%,#ffffff 70%,#e2dab3 100%); /* Chrome10-25, Safari5.1-6 */
+                background: linear-gradient(to bottom, #e3e9fc 0%,#ffffff 70%,#e2dab3 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                width: 100vw;
+                height: 100vh;
+            }
             canvas { display: block; }
-            #centerButton {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            font-size: 14px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 10;
-        }
-        #centerButton:hover {
-            background-color: #0056b3;
-        }
+            #mainCanvas {
+                width: 100%;
+                height: 100%;
+            }
+            #arrowCanvas  {
+                position: absolute;
+                left: 0px;
+                bottom: 0px;
+                width: 150px;
+                height: 150px;
+                z-index: 100;
+            }
+            select { width: 170px; }
         </style>
     </head>
     <body>
@@ -53,18 +61,26 @@
 
             const scene = new THREE.Scene();
 
-            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); // Transparent background
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000000, 0);  // Transparent background
-            document.body.appendChild(renderer.domElement);
-            
+            const renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                antialias: true,
+                canvas: canvas
+            }); // Clear bg so we can set it with css
+            renderer.setClearColor(0x000000, 0);
+
             let renderRequested = false;
 
-            const light = new THREE.AmbientLight(0x404040, 1.5);
-            scene.add(light);
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(1, 1, 1).normalize();
-            scene.add(directionalLight);
+            // HemisphereLight gives different colors of light from the top
+            // and bottom simulating reflected light from the 'ground' and
+            // 'sky'
+            scene.add(new THREE.HemisphereLight(0xC7E8FF, 0xFFE3B3, 0.4));
+
+            const dLight1 = new THREE.DirectionalLight(0xffffff, 0.4);
+            dLight1.position.set(5, -2, 3);
+            scene.add(dLight1);
+            const dLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            dLight2.position.set(-5, 2, 3);
+            scene.add(dLight2);
 
             if (data.compressed) {
                 const base = data.base;
@@ -170,15 +186,14 @@
                 camera.updateMatrixWorld();
             }
 
-// ---- Camera Setup ----
-        const persCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        persCamera.position.set(0, 0, 100);
-        const orthCamera = new THREE.OrthographicCamera(
-            window.innerWidth / -2, window.innerWidth / 2,
-            window.innerHeight / 2, window.innerHeight / -2, 0.1, 1000
-        );
-        orthCamera.position.set(0, 0, 100);
-        let cameraType = 'Perspective'; // Always use Perspective camera
+            let cameraType = data.camera.type;
+            const persCamera = new THREE.PerspectiveCamera(
+                50, aspectRatio, 1, 100000);
+            initCam(persCamera);
+            const orthCamera = new THREE.OrthographicCamera(
+                -aspectRatio * viewSize / 2, aspectRatio * viewSize / 2,
+                viewSize / 2, -viewSize / 2, -100000, 100000);
+            initCam(orthCamera);
 
             function assignMesh(positions, color, opacity, faces) {
                 const baseGeometry = new THREE.BufferGeometry();
@@ -564,14 +579,6 @@
                     }
                 }
             }
-                    // ---- Resize Handling ----
-        window.addEventListener('resize', function() {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            renderer.setSize(width, height);
-            persCamera.aspect = width / height;
-            persCamera.updateProjectionMatrix();
-        });
         </script>
     </body>
 </html>
