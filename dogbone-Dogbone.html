@@ -37,6 +37,10 @@
     <body>
         <canvas id="mainCanvas"></canvas>
         <canvas id="arrowCanvas"></canvas>
+        <div id="controlPanel">
+           <button id="centerButton">Center Model</button>
+           <span>Click here to center the model</span>
+        </div>
         <script type="module">
             // Direct from mrdoob: https://www.jsdelivr.com/package/npm/three
             import * as THREE from            'https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.module.js';
@@ -579,6 +583,15 @@
                     }
                 }
             }
+            // Funktion zum Zentrieren des Modells
+function centerModel() {
+    camera.position.set(data.camera.position_x, data.camera.position_y, data.camera.position_z);
+    controls.reset();
+    controls.update();
+}
+
+document.getElementById('centerButton').addEventListener('click', centerModel);
+
         </script>
     </body>
 </html>
