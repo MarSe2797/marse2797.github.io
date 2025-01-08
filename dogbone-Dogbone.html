@@ -53,26 +53,18 @@
 
             const scene = new THREE.Scene();
 
-            const renderer = new THREE.WebGLRenderer({
-                alpha: true,
-                antialias: true,
-                canvas: canvas
-            }); // Clear bg so we can set it with css
-            renderer.setClearColor(0x000000, 0);
-
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true }); // Transparent background
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);  // Transparent background
+            document.body.appendChild(renderer.domElement);
+            
             let renderRequested = false;
 
-            // HemisphereLight gives different colors of light from the top
-            // and bottom simulating reflected light from the 'ground' and
-            // 'sky'
-            scene.add(new THREE.HemisphereLight(0xC7E8FF, 0xFFE3B3, 0.4));
-
-            const dLight1 = new THREE.DirectionalLight(0xffffff, 0.4);
-            dLight1.position.set(5, -2, 3);
-            scene.add(dLight1);
-            const dLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-            dLight2.position.set(-5, 2, 3);
-            scene.add(dLight2);
+            const light = new THREE.AmbientLight(0x404040, 1.5);
+            scene.add(light);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1).normalize();
+            scene.add(directionalLight);
 
             if (data.compressed) {
                 const base = data.base;
@@ -178,14 +170,15 @@
                 camera.updateMatrixWorld();
             }
 
-            let cameraType = data.camera.type;
-            const persCamera = new THREE.PerspectiveCamera(
-                50, aspectRatio, 1, 100000);
-            initCam(persCamera);
-            const orthCamera = new THREE.OrthographicCamera(
-                -aspectRatio * viewSize / 2, aspectRatio * viewSize / 2,
-                viewSize / 2, -viewSize / 2, -100000, 100000);
-            initCam(orthCamera);
+// ---- Camera Setup ----
+        const persCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        persCamera.position.set(0, 0, 100);
+        const orthCamera = new THREE.OrthographicCamera(
+            window.innerWidth / -2, window.innerWidth / 2,
+            window.innerHeight / 2, window.innerHeight / -2, 0.1, 1000
+        );
+        orthCamera.position.set(0, 0, 100);
+        let cameraType = 'Perspective'; // Always use Perspective camera
 
             function assignMesh(positions, color, opacity, faces) {
                 const baseGeometry = new THREE.BufferGeometry();
@@ -571,6 +564,14 @@
                     }
                 }
             }
+                    // ---- Resize Handling ----
+        window.addEventListener('resize', function() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            persCamera.aspect = width / height;
+            persCamera.updateProjectionMatrix();
+        });
         </script>
     </body>
 </html>
