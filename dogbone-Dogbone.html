@@ -432,11 +432,11 @@
             // Add functionality for setting the model to top-view when the button is clicked
             document.getElementById('centerButton').addEventListener('click', () => {
                 if (cameraType === 'Perspective') {
-                    persCamera.position.set(camCenter.x, camCenter.y, camCenter.z + 500); // ausreichend Höhe
+                    persCamera.position.set(camCenter.x, camCenter.y, camCenter.z + 200); // Näher an das Modell
                     persControls.target.copy(camCenter);
                     persControls.update();
                 } else {
-                    orthCamera.position.set(camCenter.x, camCenter.y, camCenter.z + 500); // ausreichend Höhe
+                    orthCamera.position.set(camCenter.x, camCenter.y, camCenter.z + 200); // Näher an das Modell
                     orthControls.target.copy(camCenter);
                     orthControls.update();
                 }
