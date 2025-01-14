@@ -46,7 +46,7 @@
         </style>
     </head>
     <body>
-        <button id="centerButton">Click here to center the model</button>
+        <button id="centerButton">Click here to top-view the model</button>
         <canvas id="mainCanvas"></canvas>
         <canvas id="arrowCanvas"></canvas>
         <script type="module">
@@ -429,22 +429,14 @@
                 }
             }
 
-            // Add functionality for centering the model when the button is clicked
+            // Add functionality for setting the model to top-view when the button is clicked
             document.getElementById('centerButton').addEventListener('click', () => {
                 if (cameraType === 'Perspective') {
-                    persCamera.position.set(
-                        camCenter.x + 100, // Anpassen des Abstandes wie nötig
-                        camCenter.y + 100, // Anpassen des Abstandes wie nötig
-                        camCenter.z + 100  // Anpassen des Abstandes wie nötig
-                    );
+                    persCamera.position.set(camCenter.x, camCenter.y, camCenter.z + 500); // ausreichend Höhe
                     persControls.target.copy(camCenter);
                     persControls.update();
                 } else {
-                    orthCamera.position.set(
-                        camCenter.x + 100, // Anpassen des Abstandes wie nötig
-                        camCenter.y + 100, // Anpassen des Abstandes wie nötig
-                        camCenter.z + 100  // Anpassen des Abstandes wie nötig
-                    );
+                    orthCamera.position.set(camCenter.x, camCenter.y, camCenter.z + 500); // ausreichend Höhe
                     orthControls.target.copy(camCenter);
                     orthControls.update();
                 }
