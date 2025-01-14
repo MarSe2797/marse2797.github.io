@@ -14,6 +14,8 @@
                 background: transparent;
                 width: 100vw;
                 height: 100vh;
+                overflow: hidden;
+                position: relative;
             }
             canvas { display: block; }
             #mainCanvas {
@@ -29,9 +31,22 @@
                 z-index: 100;
             }
             select { width: 170px; }
+
+            #centerButton {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 101; /* Make sure it's on top of canvas */
+                padding: 10px 20px;
+                background-color: rgba(255, 255, 255, 0.8);
+                border: 1px solid #ccc;
+                cursor: pointer;
+            }
         </style>
     </head>
     <body>
+        <button id="centerButton">Click here to center the model</button>
         <canvas id="mainCanvas"></canvas>
         <canvas id="arrowCanvas"></canvas>
         <script type="module">
@@ -413,6 +428,11 @@
                 }
             }
 
+            // Add functionality for centering the model when the button is clicked
+            document.getElementById('centerButton').addEventListener('click', () => {
+                persControls.reset();
+                orthControls.reset();
+            });
         </script>
     </body>
 </html>
