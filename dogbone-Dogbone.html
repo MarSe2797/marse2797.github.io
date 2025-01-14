@@ -37,7 +37,7 @@
                 top: 10px;
                 left: 50%;
                 transform: translateX(-50%);
-                z-index: 101; /* Make sure it's on top of canvas */
+                z-index: 101;
                 padding: 10px 20px;
                 background-color: rgba(255, 255, 255, 0.8);
                 border: 1px solid #ccc;
@@ -169,9 +169,10 @@
             }
 
             const camCenter = new THREE.Vector3(
-                0.5 * (globalMaxMin[0].max - globalMaxMin[0].min) + globalMaxMin[0].min,
-                0.5 * (globalMaxMin[1].max - globalMaxMin[1].min) + globalMaxMin[1].min,
-                0.5 * (globalMaxMin[2].max - globalMaxMin[2].min) + globalMaxMin[2].min );
+                0.5 * (globalMaxMin[0].max + globalMaxMin[0].min),
+                0.5 * (globalMaxMin[1].max + globalMaxMin[1].min),
+                0.5 * (globalMaxMin[2].max + globalMaxMin[2].min) 
+            );
             const viewSize = 1.5 * bigrange;
             const aspectRatio = canvas.clientWidth / canvas.clientHeight;
             const originalAspect = aspectRatio;
@@ -185,7 +186,7 @@
                 camera.updateMatrixWorld();
             }
 
-            let cameraType = 'Perspective'; // Fest auf Perspective gesetzt
+            let cameraType = 'Perspective';
             const persCamera = new THREE.PerspectiveCamera(
                 50, aspectRatio, 1, 100000);
             initCam(persCamera);
@@ -308,12 +309,12 @@
             arrowScene.add(new THREE.HemisphereLight(0xC7E8FF, 0xFFE3B3, 1.2));
 
             const persControls = new OrbitControls(persCamera, renderer.domElement);
-            persControls.enablePan = false; // Schwenken deaktiviert
+            persControls.enablePan = false;
             persControls.target = camCenter;
             persControls.update();
 
             const orthControls = new OrbitControls(orthCamera, renderer.domElement);
-            orthControls.enablePan = false; // Schwenken deaktiviert
+            orthControls.enablePan = false;
             orthControls.target = camCenter;
             orthControls.update();
 
@@ -430,9 +431,26 @@
 
             // Add functionality for centering the model when the button is clicked
             document.getElementById('centerButton').addEventListener('click', () => {
-                persControls.reset();
-                orthControls.reset();
+                if (cameraType === 'Perspective') {
+                    persCamera.position.set(
+                        camCenter.x + 100, // Anpassen des Abstandes wie nötig
+                        camCenter.y + 100, // Anpassen des Abstandes wie nötig
+                        camCenter.z + 100  // Anpassen des Abstandes wie nötig
+                    );
+                    persControls.target.copy(camCenter);
+                    persControls.update();
+                } else {
+                    orthCamera.position.set(
+                        camCenter.x + 100, // Anpassen des Abstandes wie nötig
+                        camCenter.y + 100, // Anpassen des Abstandes wie nötig
+                        camCenter.z + 100  // Anpassen des Abstandes wie nötig
+                    );
+                    orthControls.target.copy(camCenter);
+                    orthControls.update();
+                }
+                requestRender();
             });
+
         </script>
     </body>
 </html>
