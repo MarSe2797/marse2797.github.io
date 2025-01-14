@@ -11,10 +11,8 @@
                 padding: 0;
             }
             body {
-                background: #ffffff; /* Old browsers */
-                background: -moz-linear-gradient(top, #e3e9fc 0%, #ffffff 70%, #e2dab3 100%); /* FF3.6-15 */
-                background: -webkit-linear-gradient(top, #e3e9fc 0%,#ffffff 70%,#e2dab3 100%); /* Chrome10-25, Safari5.1-6 */
-                background: linear-gradient(to bottom, #e3e9fc 0%,#ffffff 70%,#e2dab3 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                /* Hintergrundfarbe entfernt/korrigiert für Transparenz */
+                background: transparent;
                 width: 100vw;
                 height: 100vh;
             }
@@ -43,12 +41,12 @@
         </div>
         <script type="module">
             // Direct from mrdoob: https://www.jsdelivr.com/package/npm/three
-            import * as THREE from            'https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.module.js';
-            import { OrbitControls } from     'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/controls/OrbitControls.js';
-            import { GUI } from               'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/libs/dat.gui.module.js';
-            import { Line2 } from             'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/Line2.js';
-            import { LineMaterial } from      'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineMaterial.js';
-            import { LineGeometry } from      'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineGeometry.js';
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.module.js';
+            import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/controls/OrbitControls.js';
+            import { GUI } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/libs/dat.gui.module.js';
+            import { Line2 } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/Line2.js';
+            import { LineMaterial } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineMaterial.js';
+            import { LineGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/lines/LineGeometry.js';
             import { EdgeSplitModifier } from 'https://cdn.jsdelivr.net/npm/three@0.125.0/examples/jsm/modifiers/EdgeSplitModifier.js';
 
             const data = {"camera":{"type":"Orthographic","focalDistance":143.14503479003906,"position_x":59.35516357421875,"position_y":100.14485931396484,"position_z":78.144775390625},"file":{},"objects":[{"name":"Dogbone","color":"#cccccc","opacity":1.0,"verts":"1abcadcebfedfgbhgdhibfidfjbcjdcjbkjdkiblidlgbmgdmebledlabkadkndknbkopkoqkrskrtkuvkuwkxwkxvkxwcrtcoqcnbcndcopcrscxvcuvcuwcybkybcydczpczqcAscAtcwvcwwcBwcBvcydkzqkzpkAtkAskwwkwvkBvkBwk","facets":"1abccbdcdeedfefggfhghiihjklmmlnmnoonpopqqprqrssrtlkuukvuvwwvxwxyyxzyzAAzBBzCADyECFFCzFzGGzxGxHHxvIuJJuwJwKKwyKyLLyDDALLAMABMMBNBCNNCEijHHjIHIGGIJGJFFJKFKNNKMMKLNEFOassaisikkiHkHvOPaiaggacgceskqqkmqmobaQQaPQPRRPSRSTTSUTUVVUWWUXVYTstOOtZOZ11Z2123324345546647583QtbbtlbljjlujuIQZtltnntrnrpbjddjhdhfY7TT74T4RR42R2QQ2Z67VV7Y56WW6V85XX5WPOSSO1S1UU13U3XX38","wires":[],"faceColors":[],"facesToFacets":[],"floats":"&JpE#LLvP?Tvir53RaTuy]Cca$r_H6p@X_.W3d~t!]TvC4JikTDE)/Jv84Uv.Z[iW%;o?.eue5UvKG1O.{pdVrQyu`^G;Zzi0k=PSfFH0d27d0UvWU32k,ZbZVgu{4UvRaTulgvg$peCL)).~@yi"}],"compressed":true,"base":"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#$%&()*+-:;/=>?@[]^_,.{|}~`","baseFloat":",.-0123456789"};
@@ -583,14 +581,15 @@
                     }
                 }
             }
-            // Funktion zum Zentrieren des Modells
-function centerModel() {
-    camera.position.set(data.camera.position_x, data.camera.position_y, data.camera.position_z);
-    controls.reset();
-    controls.update();
-}
 
-document.getElementById('centerButton').addEventListener('click', centerModel);
+            // Funktion zum Zentrieren des Modells
+            function centerModel() {
+                camera.position.set(data.camera.position_x, data.camera.position_y, data.camera.position_z);
+                controls.reset();
+                controls.update();
+            }
+
+            document.getElementById('centerButton').addEventListener('click', centerModel);
 
         </script>
     </body>
