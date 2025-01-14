@@ -296,6 +296,7 @@
             persControls.enablePan = false; // Schwenken deaktiviert
             persControls.target = camCenter;
             persControls.update();
+
             const orthControls = new OrbitControls(orthCamera, renderer.domElement);
             orthControls.enablePan = false; // Schwenken deaktiviert
             orthControls.target = camCenter;
@@ -334,6 +335,7 @@
 
             persControls.addEventListener('change', requestRender);
             orthControls.addEventListener('change', requestRender);
+
             renderer.domElement.addEventListener('mousemove', onMouseMove);
             window.addEventListener('resize', onMainCanvasResize, false);
 
@@ -383,7 +385,7 @@
                 raycaster.setFromCamera(new THREE.Vector2(
                     (e.clientX / canvas.clientWidth) * 2 - 1,
                     -(e.clientY / canvas.clientHeight) * 2 + 1),
-                                        c);
+                    c);
                 const intersects = raycaster.intersectObjects(raycasterObj);
 
                 let chosen = '';
